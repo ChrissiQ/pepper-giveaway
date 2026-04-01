@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
 import {
+  connectAuthEmulator,
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
   type User,
 } from "firebase/auth";
-import { getDatabase } from "firebase/database";
+import { connectDatabaseEmulator, getDatabase } from "firebase/database";
 import { FirebaseContext } from "@/firebase-context";
 import Pepper from "@/components/Pepper";
 import AuthButton from "@/components/AuthButton";
@@ -26,6 +27,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
+
+if (import.meta.env.DEV) {
+  connectAuthEmulator(auth, "http://localhost:9099");
+  connectDatabaseEmulator(db, "localhost", 9000);
+}
+
 const googleProvider = new GoogleAuthProvider();
 const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 

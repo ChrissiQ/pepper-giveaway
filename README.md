@@ -1,69 +1,111 @@
-# React + TypeScript + Vite
+# Pepper Giveaway
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web app for claiming hot pepper seedlings. Built with React, TypeScript, Vite, and Tailwind CSS. Data is stored in Firebase Realtime Database with Google authentication.
 
-Currently, two official plugins are available:
+Hosted on GitHub Pages.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Local development prerequisites
 
-## Expanding the ESLint configuration
+- **Node.js** (v24+)
+- **Java** (required by Firebase Emulator Suite)
+- **Firebase CLI**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installing Java on macOS
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+brew install openjdk
+echo 'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Verify with `java -version`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Installing Firebase CLI
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install -g firebase-tools
 ```
+
+## Setup
+
+```bash
+npm install
+```
+
+Create a `.env.local` file with your Firebase project credentials:
+
+```
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_APP_ID=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_DATABASE_URL=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+```
+
+## Development
+
+Run the Vite dev server and Firebase emulators together:
+
+```bash
+npm run dev:full
+```
+
+This starts:
+
+- **Vite dev server** at http://localhost:5173
+- **Firebase Auth emulator** on port 9099
+- **Firebase Realtime Database emulator** on port 9000
+- **Firebase Emulator UI** at http://localhost:4000
+
+In development mode (`vite dev`), the app automatically connects to the local emulators instead of production Firebase. The emulator database starts empty each session.
+
+You can also run them separately:
+
+```bash
+npm run emulators   # just the Firebase emulators
+npm run dev         # just the Vite dev server
+```
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run emulators` | Start Firebase emulators |
+| `npm run dev:full` | Start emulators and dev server together |
+
+## Production build
+
+```bash
+npm run build
+```
+
+Output goes to `dist/`. The Vite config sets `base: "/pepper-giveaway/"` for GitHub Pages deployment.
+
+## Project structure
+
+```
+src/
+  App.tsx                  # Firebase init, app layout, pepper data
+  hooks.ts                 # useAuth and useReservations hooks
+  firebase-context.ts      # React context for Firebase instances
+  index.css                # Tailwind imports, dark mode config, base styles
+  components/
+    Pepper.tsx             # Pepper card with claim/unclaim functionality
+    AvailabilityIndicator.tsx  # Dot-based availability display
+    AuthButton.tsx         # Sign in / sign out button
+    ThemeToggle.tsx        # Light / dark / system mode switcher
+    ReserveIcon.tsx        # Claim button icon (gift box)
+    UnreserveIcon.tsx      # Unclaim button icon (x-mark)
+    SunIcon.tsx            # Light mode icon
+    MoonIcon.tsx           # Dark mode icon
+```
+
+## Dark mode
+
+The app supports light, dark, and system-preference modes via a toggle in the top-right corner. Dark mode uses Tailwind v4's class-based strategy (`@custom-variant dark` in `index.css`). The user's preference is persisted to `localStorage`.

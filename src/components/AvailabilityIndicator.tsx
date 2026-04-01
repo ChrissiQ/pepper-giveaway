@@ -3,7 +3,7 @@ import clsx from "clsx";
 function Dot({ state }: { state: "available" | "taken" | "yours" }) {
   if (state === "yours") {
     return (
-      <span className="flex size-5 select-none items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white">
+      <span className="flex size-5 select-none items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white transition-colors duration-300">
         {"\u2713"}
       </span>
     );
@@ -12,10 +12,10 @@ function Dot({ state }: { state: "available" | "taken" | "yours" }) {
   return (
     <span
       className={clsx(
-        "inline-block size-5 rounded-full",
+        "inline-block size-5 rounded-full transition-colors duration-300",
         state === "taken"
-          ? "bg-gray-400 dark:bg-gray-500"
-          : "border-2 border-gray-300 bg-transparent dark:border-gray-400",
+          ? "bg-current"
+          : "border-2 border-current bg-transparent",
       )}
     />
   );
@@ -39,7 +39,7 @@ export default function AvailabilityIndicator({
           {Array.from({ length: count }, (_, i) => (
             <span
               key={i.toString()}
-              className="inline-block size-5 rounded-full bg-gray-200 dark:bg-gray-700"
+              className="inline-block size-5 rounded-full bg-current opacity-80"
             />
           ))}
         </div>
@@ -54,12 +54,18 @@ export default function AvailabilityIndicator({
   const othersReserved = hasReserved ? reserved - 1 : reserved;
 
   const dots: Array<"yours" | "taken" | "available"> = [];
-  if (hasReserved) dots.push("yours");
   for (let i = 0; i < othersReserved; i++) dots.push("taken");
+  if (hasReserved) dots.push("yours");
   for (let i = 0; i < available; i++) dots.push("available");
 
   const label =
-    available > 0 ? `${available.toString()} available` : "All gone!";
+    available > 0
+      ? `${available.toString()} available${hasReserved ? " (1 is yours)" : ""}`
+      : hasReserved
+        ? othersReserved > 0
+          ? "None left (1 is yours)"
+          : "Claimed by you"
+        : "None left";
 
   return (
     <div className="flex items-center gap-3">

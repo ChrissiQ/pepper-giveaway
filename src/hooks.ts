@@ -8,9 +8,9 @@ import {
   runTransaction,
 } from "firebase/database";
 import { signOut } from "firebase/auth";
-import { useFirebase } from "./firebase-context";
+import { useFirebase } from "@/firebase-context";
 
-export type Reservation = { key: string; name: string };
+export type Reservation = { key: string; name: string; email: string };
 
 export function useAuth() {
   const { user, auth, authReady } = useFirebase();
@@ -25,29 +25,42 @@ export function useReservations(pepperName: string, limit: number) {
   useEffect(() => {
     const dbRef = ref(db, `reservations/${pepperName}`);
     return onValue(dbRef, (snapshot) => {
-      const data = snapshot.val() as Record<string, string> | null;
+      const data = snapshot.val() as Record<
+        string,
+        { name: string; email: string }
+      > | null;
       setReservations(
-        data ? Object.entries(data).map(([key, name]) => ({ key, name })) : [],
+        data
+          ? Object.entries(data).map(([key, { name, email }]) => ({
+              key,
+              name,
+              email,
+            }))
+          : [],
       );
     });
   }, [db, pepperName]);
 
   const reserve = async () => {
     if (!authReady) return;
-    let name: string;
-    if (user) {
-      name = user.displayName ?? user.email ?? "Anonymous";
-    } else {
-      const { user: signedInUser } = await signInWithGoogle();
-      name = signedInUser.displayName ?? signedInUser.email ?? "Anonymous";
+    let resolvedUser = user;
+    if (!resolvedUser) {
+      const result = await signInWithGoogle();
+      resolvedUser = result.user;
     }
+    const email = resolvedUser.email;
+    if (!email) return;
+    const name = resolvedUser.displayName ?? email;
     const dbRef = ref(db, `reservations/${pepperName}`);
     const newKey = push(dbRef).key!;
-    await runTransaction(dbRef, (current: Record<string, string> | null) => {
-      const existing = current ?? {};
-      if (Object.keys(existing).length >= limit) return;
-      return { ...existing, [newKey]: name };
-    });
+    await runTransaction(
+      dbRef,
+      (current: Record<string, { name: string; email: string }> | null) => {
+        const existing = current ?? {};
+        if (Object.keys(existing).length >= limit) return;
+        return { ...existing, [newKey]: { name, email } };
+      },
+    );
   };
 
   const unreserve = async (key: string) => {

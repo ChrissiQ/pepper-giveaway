@@ -52,8 +52,15 @@ const PEPPERS: PepperData[] = [
     count: 2,
     heat: 1000,
     image: "peppapeach-stripeys.jpg",
+    format: "wide",
   },
-  { name: "Peachadew", count: 2, heat: 1000, image: "peachadews.jpg" },
+  {
+    name: "Peachadew",
+    count: 2,
+    heat: 1000,
+    image: "peachadews.jpg",
+    format: "wide",
+  },
   {
     name: "Aji White Fantasy",
     count: 1,
@@ -66,7 +73,6 @@ const PEPPERS: PepperData[] = [
     count: 2,
     heat: 30000,
     image: "lemon-drops.jpg",
-    format: "wide",
   },
   {
     name: "Sugar Rush Stripey",
@@ -106,10 +112,10 @@ function App() {
           <ThemeToggle />
         </header>
         <div className="relative px-[3vw] pt-16 md:pt-0">
-            <VineLine
-              className="absolute rotate-90 md:rotate-0 origin-[100%_50%] -top-12 md:top-auto md:-bottom-60 -left-6 md:-left-2  text-green-800 dark:text-lime-900 pointer-events-none w-56 md:w-64"
-              style={{ height: "auto" }}
-            />
+          <VineLine
+            className="absolute rotate-90 md:rotate-0 origin-[100%_50%] -top-12 md:top-auto md:-bottom-60 -left-6 md:-left-2  text-green-800 dark:text-lime-900 pointer-events-none w-56 md:w-64"
+            style={{ height: "auto" }}
+          />
           <div className="pt-32 md:pt-4 pb-12 md:pb-24 md:pl-32 md:mb-32">
             <div className="max-w-[60ch]">
               <h1 className="text-4xl font-bold mb-2">

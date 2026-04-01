@@ -52,14 +52,16 @@ export default function Pepper({
       <p className={clsx(className, "font-bold text-2xl")} data-heat={heat}>
         {heat.toLocaleString()} SHU ({level})
       </p>
-      {reservations.map((r) => (
-        <ReservationLine
-          key={r.key}
-          name={r.name}
-          isOwner={userEmail === r.email}
-          onRemove={() => unreserve(r.key)}
-        />
-      ))}
+      <div className="mb-4">
+        {reservations.map((r) => (
+          <ReservationLine
+            key={r.key}
+            name={r.name}
+            isOwner={userEmail === r.email}
+            onRemove={() => unreserve(r.key)}
+          />
+        ))}
+      </div>
       <div
         className="relative mt-auto group"
         onClick={(e) => {

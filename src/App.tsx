@@ -127,7 +127,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="relative w-full grid grid-flow-row-dense grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-8 p-[3vw] md:p-8 border-green-800 dark:border-lime-800 border-t-8 rounded-[5%] bg-white dark:bg-gray-900">
+        <div className="relative w-full grid grid-flow-row-dense grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-8 p-[3vw] md:p-8 border-green-800 dark:border-lime-800 border-t-8 rounded-4xl md:rounded-[5rem] bg-white dark:bg-[#242424]">
           {PEPPERS.map((pepper) => (
             <Pepper key={pepper.name} {...pepper} />
           ))}

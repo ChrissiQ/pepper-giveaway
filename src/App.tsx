@@ -10,7 +10,8 @@ import {
 import { getDatabase } from "firebase/database";
 import { FirebaseContext } from "@/firebase-context";
 import Pepper from "@/components/Pepper";
-import LogoutButton from "@/components/LogoutButton";
+import AuthButton from "@/components/AuthButton";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -78,7 +79,6 @@ const PEPPERS: PepperData[] = [
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [activePepper, setActivePepper] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -92,20 +92,18 @@ function App() {
     <FirebaseContext.Provider
       value={{ auth, db, user, authReady, signInWithGoogle }}
     >
-      <div
-        className="w-full grid grid-flow-row-dense grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-8 p-8"
-        onClick={() => setActivePepper(null)}
-      >
+      <header className="flex w-full items-center p-8">
+        <div className="flex-1" />
+        <AuthButton />
+        <div className="flex flex-1 justify-end">
+          <ThemeToggle />
+        </div>
+      </header>
+      <div className="w-full grid grid-flow-row-dense grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-8 p-[3vw] md:p-8">
         {PEPPERS.map((pepper) => (
-          <Pepper
-            key={pepper.name}
-            {...pepper}
-            active={activePepper === pepper.name}
-            onActivate={() => setActivePepper(pepper.name)}
-          />
+          <Pepper key={pepper.name} {...pepper} />
         ))}
       </div>
-      <LogoutButton />
     </FirebaseContext.Provider>
   );
 }

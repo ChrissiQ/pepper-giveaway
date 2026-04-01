@@ -21,10 +21,13 @@ export function useAuth() {
 export function useReservations(pepperName: string, limit: number) {
   const { db, user, authReady, signInWithGoogle } = useFirebase();
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     const dbRef = ref(db, `reservations/${pepperName}`);
     return onValue(dbRef, (snapshot) => {
+      setLoading(false);
       const data = snapshot.val() as Record<
         string,
         { name: string; email: string }
@@ -67,5 +70,5 @@ export function useReservations(pepperName: string, limit: number) {
     await remove(child(ref(db, `reservations/${pepperName}`), key));
   };
 
-  return { reservations, reserve, unreserve };
+  return { reservations, reserve, unreserve, loading };
 }

@@ -1,101 +1,126 @@
 import clsx from "clsx";
 import { useReservations, useAuth } from "@/hooks";
-import HeartIcon from "@/components/HeartIcon";
-import ReservationLine from "@/components/ReservationLine";
+import ReserveIcon from "@/components/ReserveIcon";
+import UnreserveIcon from "@/components/UnreserveIcon";
+import AvailabilityIndicator from "@/components/AvailabilityIndicator";
 
 function getHeatLevel(heat: number): { level: string; className: string } {
   if (heat <= 100) {
     return { level: "mild", className: "text-green-600" };
   } else if (heat <= 10000) {
-    return { level: "medium", className: "text-yellow-400" };
+    return {
+      level: "medium",
+      className: "text-yellow-600 dark:text-yellow-400",
+    };
   } else if (heat <= 100000) {
     return { level: "hot", className: "text-red-600" };
   } else {
-    return { level: "very hot", className: "text-red-800" };
+    return { level: "very hot", className: "text-red-800 dark:text-pink-400" };
   }
 }
 
 export default function Pepper({
-  active,
   count,
   format = "regular",
   heat,
   image,
   name,
-  onActivate,
 }: {
-  active: boolean;
   count: number;
   format?: "regular" | "wide";
   heat: number;
   image: string;
   name: string;
-  onActivate: () => void;
 }) {
-  const { level, className } = getHeatLevel(heat);
+  const { level, className: heatColorBase } = getHeatLevel(heat);
   const { user } = useAuth();
-  const { reservations, reserve, unreserve } = useReservations(name, count);
+  const { reservations, reserve, unreserve, loading } = useReservations(
+    name,
+    count,
+  );
 
   const userEmail = user?.email ?? null;
   const hasReserved =
     userEmail !== null && reservations.some((r) => r.email === userEmail);
+  const heatColor =
+    hasReserved && level === "very hot" ? "text-pink-400" : heatColorBase;
   const isFull = reservations.length >= count;
-  const showOverlay = !hasReserved && !isFull;
+  const canReserve = !hasReserved && !isFull;
 
   return (
     <article
-      className={clsx("flex flex-col", format === "wide" && "md:col-span-2")}
+      className={clsx(
+        "group grid grid-rows-subgrid row-span-2 overflow-hidden rounded-xl bg-white shadow-md dark:bg-gray-900",
+        format === "wide" && "md:col-span-2",
+        hasReserved && "shadow-xl shadow-black/40",
+      )}
     >
-      <h1 className="text-3xl">
-        {name} ({count.toString()})
-      </h1>
-      <p className={clsx(className, "font-bold text-2xl")} data-heat={heat}>
-        {heat.toLocaleString()} SHU ({level})
-      </p>
-      <div className="mb-4">
-        {reservations.map((r) => (
-          <ReservationLine
-            key={r.key}
-            name={r.name}
-            isOwner={userEmail === r.email}
-            onRemove={() => unreserve(r.key)}
-          />
-        ))}
-      </div>
-      <div
-        className="relative mt-auto group"
-        onClick={(e) => {
-          e.stopPropagation();
-          onActivate();
-        }}
-      >
+      <div className="relative col-start-1 row-span-full">
         <img
           src={image}
           alt=""
           className={clsx(
-            "mb-0 mt-auto w-full object-cover",
+            "h-full w-full object-cover",
             format === "wide" ? "aspect-3/2" : "aspect-5/7",
           )}
         />
-        {showOverlay && (
-          <div
-            className={clsx(
-              "absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity",
-              "opacity-0 group-hover:opacity-100",
-              active && "opacity-100",
-            )}
-          >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                reserve();
-              }}
-              className="flex items-center gap-2 rounded-full bg-white px-5 py-3 text-lg font-semibold text-gray-900 shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <HeartIcon className="size-6" />I want this!
-            </button>
-          </div>
+
+        {hasReserved && (
+          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/0 to-transparent" />
         )}
+
+        {canReserve && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              reserve();
+            }}
+            className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-base font-medium text-gray-900 shadow-lg transition cursor-pointer hover:scale-105"
+            aria-label="Reserve this pepper"
+          >
+            Claim
+            <ReserveIcon className="size-5" />
+          </button>
+        )}
+
+        {hasReserved && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const mine = reservations.find((r) => r.email === userEmail);
+              if (mine) unreserve(mine.key);
+            }}
+            className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-red-500 px-4 py-2.5 text-base font-medium text-white shadow-lg transition cursor-pointer hover:scale-105"
+            aria-label="Remove your reservation"
+          >
+            Cancel
+            <UnreserveIcon className="size-5" />
+          </button>
+        )}
+      </div>
+
+      <div
+        className={clsx(
+          "@container/card relative z-10 col-start-1 row-start-2",
+          hasReserved
+            ? "text-white"
+            : "bg-white dark:bg-gray-900/90 dark:backdrop-blur-sm",
+        )}
+      >
+        <div className="flex flex-col justify-start px-[4cqw] py-[6cqw] @min-[24rem]/card:px-6 @min-[24rem]/card:py-8">
+          <h2 className="text-2xl font-bold">{name}</h2>
+          <p className={clsx("text-lg font-bold", heatColor)}>
+            {heat.toLocaleString()} SHU ({level})
+          </p>
+          <div className="mt-2">
+            <AvailabilityIndicator
+              count={count}
+              reserved={reservations.length}
+              hasReserved={hasReserved}
+              loading={loading}
+            />
+          </div>
+        </div>
       </div>
     </article>
   );
